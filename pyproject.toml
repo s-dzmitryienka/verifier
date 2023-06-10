@@ -9,8 +9,9 @@ packages = [{include = "verifier_api"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 fastapi = "^0.95.2"
-sqlmodel = "^0.0.8"
 uvicorn = "^0.22.0"
+asyncpg = "^0.27.0"
+sqlalchemy = {extras = ["asyncio"], version = "^2.0.16"}
 psycopg2-binary = "^2.9.6"
 
 

@@ -1,16 +1,28 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from db import init_db
-from models import SongTable
-
+from auth.schemas import UserCreateSchema, UserSchema
+from database import Base, engine, get_session
+from auth.services import create_user as srv_create_user
 app = FastAPI()
+
+
+async def init_models():
+    async with engine.begin() as conn:
+        # await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
 
 
 @app.on_event("startup")
 def on_startup():
-    init_db()
+    pass
 
 
 @app.get("/ping")
 async def pong():
     return {"ping": "pong!"}
+
+
+@app.post("/users/", response_model=UserSchema)
+async def create_user(user: UserCreateSchema, session: AsyncSession = Depends(get_session)):
+    return await srv_create_user(db_session=session, user=user)
