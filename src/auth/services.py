@@ -70,7 +70,7 @@ class UserService(CRUDMixin):
         return created_user
 
     @staticmethod
-    def validate_password(password: str) -> None:
+    def validate_password(password: str) -> None:  # todo: move to pydantic validations!!!
         """
         Validate a password.
 
