@@ -1,9 +1,12 @@
+from uuid import UUID
+
 from fastapi import HTTPException
 from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import expression
 
 from core.constants import StatusEnum
+from core.exceptions import ObjectDoesNotExist
 
 
 class CRUDMixin:
@@ -17,7 +20,7 @@ class CRUDMixin:
 
     async def create(self, input_data: create_scheme, session: AsyncSession):
         """ Create db instance """
-        obj = self.table(**input_data.dict())
+        obj = self.table(**input_data.validated_dict())
         session.add(obj)
         await session.commit()
         await session.refresh(obj)
@@ -31,7 +34,7 @@ class CRUDMixin:
     def _check_object(obj: table) -> True or HTTPException:
         """ Check if object exist """
         if not obj:
-            raise HTTPException(status_code=404, detail=f'Object not found: {obj}')
+            raise ObjectDoesNotExist()
         return True
 
     async def list(self, session: AsyncSession) -> table:
@@ -40,7 +43,7 @@ class CRUDMixin:
         objects = await session.execute(query)
         return objects.scalars().all()
 
-    async def retrieve(self, pk: int, session: AsyncSession) -> table or HTTPException:
+    async def retrieve(self, pk: UUID, session: AsyncSession) -> table or HTTPException:
         """ Get object by primary key """
         query = select(self.table).where(self.get_pk_attr() == pk)
         res = await session.execute(query)
@@ -53,7 +56,8 @@ class CRUDMixin:
     ) -> table or HTTPException:
         """ Update object by specified primary key """
         retrieved_obj = await self.retrieve(pk, session)
-        query = update(self.table).where(self.get_pk_attr() == pk).values(**input_data.dict(exclude_unset=partial))
+        query = update(self.table).where(self.get_pk_attr() == pk).values(**input_data.validated_dict(
+            exclude_unset=partial))
         await self._execute_commit(query, session)
         return retrieved_obj
 

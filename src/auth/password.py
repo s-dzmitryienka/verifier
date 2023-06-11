@@ -11,6 +11,11 @@ from passlib.context import CryptContext
 
 
 class PasswordHelperProtocol(Protocol):
+    def verify(
+        self, plain_password: str, hashed_password: str
+    ) -> bool:
+        ...
+
     def verify_and_update(
         self, plain_password: str, hashed_password: str
     ) -> Tuple[bool, str]:

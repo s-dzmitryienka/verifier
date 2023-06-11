@@ -1,6 +1,7 @@
-from datetime import datetime
 import uuid as uuid_pkg
-from sqlalchemy import DateTime, Column, UUID
+from datetime import datetime
+
+from sqlalchemy import UUID, Column, DateTime
 
 from database import Base
 
