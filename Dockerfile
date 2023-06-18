@@ -69,9 +69,9 @@ COPY poetry.lock pyproject.toml ./
 # install runtime deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
 RUN poetry install --no-root
 
-# `development` image used for runtime
-FROM python-base as production
-ENV APP_ENV=development
+# `final` image used for runtime
+FROM python-base as final
+ENV APP_ENV=local
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 COPY ./src /app/
 WORKDIR /app
