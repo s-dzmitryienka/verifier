@@ -7,3 +7,11 @@ Start app
 ```shell
 uvicorn main:app --reload
 ```
+
+DB migrations with alembic tool
+```shell
+alembic init alembic  # init alembic conf files
+alembic revision --autogenerate -m "Migration-n"  # generate db migration file
+alembic upgrade head  # run migrations 
+
+```
