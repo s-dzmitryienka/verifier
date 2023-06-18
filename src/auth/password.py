@@ -1,6 +1,8 @@
 import sys
 from typing import Optional, Tuple
 
+from auth.exceptions import InvalidPasswordException
+
 if sys.version_info < (3, 8):
     from typing_extensions import Protocol  # pragma: no cover
 else:
@@ -50,3 +52,38 @@ class PasswordHelper(PasswordHelperProtocol):
 
     def generate(self) -> str:
         return pwd.genword()
+
+    @staticmethod
+    def validate_password(password: str) -> None:
+        """
+        Validate a password.
+
+        :param password: The password to validate.
+        :raises InvalidPasswordException: The password is invalid.
+        :return: None if the password is valid.
+        """
+        special_chars = {'$', '!', '@', '#', '%', '&'}
+
+        if len(password) < 8:
+            msg = 'Password length must be at least 8'
+            raise InvalidPasswordException(msg)
+
+        elif len(password) > 18:
+            msg = 'Password length must not be greater than 18'
+            raise InvalidPasswordException(msg)
+
+        elif not any(char.isdigit() for char in password):
+            msg = 'Password should have at least one number'
+            raise InvalidPasswordException(msg)
+
+        elif not any(char.isupper() for char in password):
+            msg = 'Password should have at least one uppercase letter'
+            raise InvalidPasswordException(msg)
+
+        elif not any(char.islower() for char in password):
+            msg = 'Password should have at least one lowercase letter'
+            raise InvalidPasswordException(msg)
+
+        elif not any(char in special_chars for char in password):
+            msg = 'Password should have at least one special character'
+            raise InvalidPasswordException(msg)

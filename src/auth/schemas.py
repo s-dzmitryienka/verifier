@@ -1,8 +1,11 @@
 from typing import Optional
 from uuid import UUID
 
-from pydantic import EmailStr, Field
+from fastapi import HTTPException, status
+from pydantic import EmailStr, Field, validator
 
+from auth.constants import ErrorCode
+from auth.exceptions import InvalidPasswordException
 from auth.password import PasswordHelper
 from core.base_schema import BaseSchema
 
@@ -15,6 +18,20 @@ class UserCreateSchema(BaseSchema):
     email: EmailStr
     name: str
     password: str = Field(exclude=True)
+
+    @validator('password')
+    def validate_password(cls, v, values, **kwargs):
+        try:
+            PasswordHelper.validate_password(password=v)
+        except InvalidPasswordException as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "code": ErrorCode.REGISTER_INVALID_PASSWORD,
+                    "reason": e.reason,
+                },
+        )
+        return v
 
     @property
     def hashed_password(self) -> str:

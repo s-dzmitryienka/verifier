@@ -1,27 +1,14 @@
-from typing import Optional, Union
+from typing import Optional
 
 from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.exceptions import InvalidPasswordException, UserAlreadyExists
+from auth.exceptions import UserAlreadyExists
 from auth.models import User
 from auth.password import PasswordHelperProtocol
 from auth.schemas import UserCreateSchema, UserUpdateSchema
 from core.crud_mixin import CRUDMixin
-
-
-async def create_user(db_session: AsyncSession, user: UserCreateSchema) -> User:
-    fake_hashed_password = user.email + "notreallyhashed"
-    db_user = User(
-        email=user.email,
-        name=user.name,
-        hashed_password=fake_hashed_password,
-    )
-    db_session.add(db_user)
-    await db_session.commit()
-    await db_session.refresh(db_user)
-    return db_user
 
 
 class UserService(CRUDMixin):
@@ -70,47 +57,19 @@ class UserService(CRUDMixin):
         return created_user
 
     @staticmethod
-    def validate_password(password: str) -> None:  # todo: move to pydantic validations!!!
+    def validate_password(password: str) -> None:
         """
         Validate a password.
-
-        *You should overload this method to add your own validation logic.*
 
         :param password: The password to validate.
         :raises InvalidPasswordException: The password is invalid.
         :return: None if the password is valid.
         """
-        special_chars = {'$', '!', '@', '#', '%', '&'}
-
-        if len(password) < 8:
-            msg = 'Password length must be at least 8'
-            raise InvalidPasswordException(msg)
-
-        elif len(password) > 18:
-            msg = 'Password length must not be greater than 18'
-            raise InvalidPasswordException(msg)
-
-        elif not any(char.isdigit() for char in password):
-            msg = 'Password should have at least one number'
-            raise InvalidPasswordException(msg)
-
-        elif not any(char.isupper() for char in password):
-            msg = 'Password should have at least one uppercase letter'
-            raise InvalidPasswordException(msg)
-
-        elif not any(char.islower() for char in password):
-            msg = 'Password should have at least one lowercase letter'
-            raise InvalidPasswordException(msg)
-
-        elif not any(char in special_chars for char in password):
-            msg = 'Password should have at least one special character'
-            raise InvalidPasswordException(msg)
+        ...
 
     async def on_after_register(self, user: table) -> None:
         """
         Perform logic after successful user registration.
-
-        *You should overload this method to add your own logic.*
 
         :param user: The registered user
         """
